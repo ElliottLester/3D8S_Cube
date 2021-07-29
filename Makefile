@@ -8,32 +8,29 @@ PACKER = packihx
 MAINSRC = src/main.c
 
 # These are the sources that must be compiled to .rel files:
-EXTRASRCS = \
-    src/console.c \
-    src/gpio.c \
-    src/serial.c
+EXTRASRCS=\
+	src/console.c \
+	src/gpio.c \
+	src/serial.c \
     
 # The list of .rel files can be derived from the list of their source files
 RELS = $(EXTRASRCS:.c=.rel)
 
 INCLUDES = -Isrc/inc
-CFLAGS   = 
-#LIBS    =
+
+# shared compiler flags
+CFLAGS=-mmcs51 --std-c99 --model-medium
+
+# Flags for the linker
+LDFLAGS  = $(CFLAGS) --iram-size 256 --xram-size 1024 --code-size 61440
 
 # This just provides the conventional target name "all"; it is optional
-# Note: I assume you set PNAME via some means not exhibited in your original file
-all: main prep
-	$(PACKER) \
-	$(MAINSRC:src/%.c=build/%.ihx) > $(notdir $(MAINSRC:.c=.hex))
+all: prep main
+	$(PACKER) $(MAINSRC:src/%.c=build/%.ihx) > $(notdir $(MAINSRC:.c=.hex))
 
 # How to build the overall program
 main: $(MAINSRC) $(RELS)
-	$(CC) \
-	$(INCLUDES) \
-	$(CFLAGS) \
-	$(MAINSRC) \
-	$(RELS:src/%=build/%) \
-	$(LIBS) -o build/
+	$(CC) $(INCLUDES) $(LDFLAGS) $(MAINSRC) $(RELS:src/%=build/%) $(LIBS) -o build/
 
 prep:
 	mkdir -p build/
