@@ -21,9 +21,7 @@ http://www.stcmicro.com/datasheet/STC12C5A60S2-en.pdf
 - minicom: for serial communication
 
 ## Interface
-currently the serial interface responds to 3 keys that take two hex charaters to set the provided port.
-- D : Sets the data line
-- L : Enables latches 
-- P : Sets the active vertical plane
-- S : For auto (strobe) switching the planes on in seqence(Work in progress)
+Simiple protocol for directly driving the LED Cube See play.sh
+serial port needs to be configured for 115200 8n1
+
 

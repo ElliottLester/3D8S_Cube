@@ -7,6 +7,4 @@
 #define MODE_LATCH 3
 #define MODE_AUTO 4
 
-unsigned int parseMode(BYTE input);
-BYTE parseHexByte (BYTE a);
-void consoleLoop();
+void console_parse_command(const char *cmd,const uint8_t cmd_sz);

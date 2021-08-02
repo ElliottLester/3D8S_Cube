@@ -12,6 +12,7 @@ EXTRASRCS=\
 	src/console.c \
 	src/gpio.c \
 	src/serial.c \
+	src/utils.c \
     
 # The list of .rel files can be derived from the list of their source files
 RELS = $(EXTRASRCS:.c=.rel)

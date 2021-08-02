@@ -1,21 +1,25 @@
 #include <main.h>
 #include <serial.h>
 #include <console.h>
+#include <string.h>
 
-// globals
-unsigned short mode = 0;
-BYTE hexChar = 0;
-BYTE hexByte = 0;
-
+char _cmd_data[32] = {0};           // Bytes recived buffer
+uint8_t _cmd_data_index = 0;        // Where we are upto
 
 void main()
 {
 
-//serialSendData("\r\nSTC12C5A60S2\r\n");
+serial_setup();
+serial_puts("STC12C5A60S2\n");
+
 while(1)
 {
-    serialSetup();
-    consoleLoop();
+    if (_cmd_data_index != 0)
+    {
+        console_parse_command(_cmd_data,_cmd_data_index);
+        memset(_cmd_data, 0, sizeof(_cmd_data));
+        _cmd_data_index = 0;
+    }
 }
-    
+
 }
