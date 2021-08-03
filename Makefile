@@ -4,7 +4,7 @@
 CC = sdcc
 PACKER = packihx 
 
-# In case you ever want a different name for the main source file    
+# Name of resulting .hex file   
 MAINSRC = src/main.c
 
 # These are the sources that must be compiled to .rel files:
@@ -14,30 +14,43 @@ EXTRASRCS=\
 	src/serial.c \
 	src/utils.c \
     
-# The list of .rel files can be derived from the list of their source files
+# The list of .rel files
 RELS = $(EXTRASRCS:.c=.rel)
 
 INCLUDES = -Isrc/inc
 
-# shared compiler flags
 CFLAGS=-mmcs51 --std-c99 --model-medium
-
-# Flags for the linker
 LDFLAGS  = $(CFLAGS) --iram-size 256 --xram-size 1024 --code-size 61440
 
-# This just provides the conventional target name "all"; it is optional
 all: prep main
 	$(PACKER) $(MAINSRC:src/%.c=build/%.ihx) > $(notdir $(MAINSRC:.c=.hex))
 
-# How to build the overall program
 main: $(MAINSRC) $(RELS)
 	$(CC) $(INCLUDES) $(LDFLAGS) $(MAINSRC) $(RELS:src/%=build/%) $(LIBS) -o build/
 
 prep:
 	mkdir -p build/
-	
-# How to build any .rel file from its corresponding .c file
-# GNU would have you use a pattern rule for this, but that's GNU-specific
+
+flash: all
+	@{ \
+	package='stcgal' ;\
+	activate="./$$package/bin/activate" ;\
+	devtty='/dev/ttyUSB0' ;\
+	mainHex=$(MAINSRC:src/%.c=%.hex) ;\
+	\
+	python3 -mvenv $$package ;\
+	source $$activate ;\
+	if not which stcgal > /dev/null 2>&1 ; then \
+	echo "stcgal not found! installing..." ; \
+	pip -q install --upgrade pip ;\
+	pip install $$package ;\
+	fi ;\
+	sudo bash -c "source $$activate && stcgal -P stc12 -p /dev/ttyUSB0 -b 115200 $$mainHex" ;\
+	}
+
+serial:
+	sudo picocom -b 115200 -f h -y n -d 8 -p 1 /dev/ttyUSB0
+
 .c.rel:
 	$(CC) -c $(INCLUDES) $(CFLAGS) $< -o build/
 
@@ -64,3 +77,6 @@ OUTPUTS = \
 .PHONY: clean
 clean:
 	@rm $(OUTPUTS) 2> /dev/null || true
+
+mrproper: clean
+	@rm -r $(MAINSRC:src/%.c=%.hex) build stcgal 2> /dev/null || true
